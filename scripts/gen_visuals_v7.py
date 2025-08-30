@@ -14,11 +14,23 @@ DOCS.mkdir(parents=True, exist_ok=True)
 
 
 def plot_val_curve_from_logs(out_png: str) -> bool:
-    logs = sorted(ASSETS.glob('v7_training_epoch_*.log'), key=lambda p: p.stat().st_mtime)
+    logs = list(ASSETS.glob('v7_training_epoch_*.log'))
+    # 同时并入 training_v7/logs（无周期导出时）
+    fallback_dir = ROOT.parent / 'training_v7' / 'logs'
+    if fallback_dir.exists():
+        logs += list(fallback_dir.glob('v7_training_*.log'))
+    # 去重并按修改时间排序
+    logs = sorted(set(logs), key=lambda p: p.stat().st_mtime)
     if not logs:
         return False
     epochs, accs = [], []
-    for log in logs[-5:]:  # 近几次快照，合并读取
+    # 合并读取全部可用日志（跳过过小/空日志）
+    for log in logs:
+        try:
+            if log.stat().st_size < 200:
+                continue
+        except Exception:
+            continue
         text = log.read_text(encoding='utf-8', errors='ignore')
         for line in text.splitlines():
             m = re.search(r"Epoch (\d+)/(\d+) \| loss=([0-9.\-]+) \| val_acc=([0-9.]+)", line)
