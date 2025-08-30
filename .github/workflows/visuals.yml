@@ -18,6 +18,7 @@ jobs:
       - name: Generate visuals
         run: |
           python scripts/gen_visuals.py
+          python scripts/gen_visuals_v7.py || true
       - name: Commit visuals
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
@@ -44,6 +45,7 @@ jobs:
       - name: Generate visuals
         run: |
           python scripts/gen_visuals.py
+          python scripts/gen_visuals_v7.py || true
       - name: Commit visuals
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
